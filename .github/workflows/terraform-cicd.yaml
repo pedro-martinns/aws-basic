@@ -12,7 +12,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  terraform plan:
+  terraform-plan:
     name: Terraform plan
     runs-on: ubuntu-latest
     defaults:
@@ -44,7 +44,7 @@ jobs:
     - name: Terraform Plan
       run: terraform plan -no-color
 
-  terraform apply:
+  terraform-apply:
     name: Terraform apply
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
