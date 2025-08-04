@@ -1,4 +1,4 @@
-name: terraform-cicd
+name: Terraform CD/CD
 
 on:
   push:
