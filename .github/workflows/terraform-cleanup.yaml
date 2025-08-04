@@ -30,9 +30,8 @@ jobs:
         aws-region: eu-west-2
     
     - name: Terraform Init
-      id: init
-      run: terraform init
+      run: terraform init -input=false
     
     - name: Terraform Plan Destroy
       id: plan
-      run: terraform plan -no-color
+      run: terraform plan -destroy -no-color
