@@ -2,8 +2,9 @@ name: terraform-cicd
 
 on:
   push:
+  pull_request:
     branches:
-      - 'main'
+      - main
 
 permissions:
   id-token: write
@@ -11,9 +12,12 @@ permissions:
   pull-requests: write
 
 jobs:
-  terraform-cicd:
-    name: terraform-cicd
+  plan:
+    name: Terraform plan
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
     
     steps:
     - name: Checkout
@@ -21,28 +25,68 @@ jobs:
       
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
-
-    - name: Terraform fmt
-      id: fmt
-      run: terraform fmt -check
-      
+    
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: arn:aws:iam::858669496696:role/github-oidc-terraform-use-case
         aws-region: eu-west-2
 
+    - name: Terraform fmt
+      id: fmt
+      run: terraform fmt -check
+      
     - name: Terraform Init
       id: init
-      working-directory: terraform
       run: terraform init
 
     - name: Terraform Validate
       id: validate
-      working-directory: terraform
       run: terraform validate -no-color
 
     - name: Terraform Plan
       id: plan
-      working-directory: terraform
       run: terraform plan -no-color
+
+  apply:
+    name: Terraform apply (PRs only)
+    if: ${{ github.event_name == 'pull_request' }}
+    needs: plan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+    
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::858669496696:role/github-oidc-terraform-use-case
+        aws-region: eu-west-2
+
+    - name: Terraform fmt
+      id: fmt
+      run: terraform fmt -check
+      
+    - name: Terraform Init
+      id: init
+      run: terraform init
+
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate -no-color
+
+    - name: Terraform Plan
+      id: plan
+      run: terraform plan -no-color
+    
+    - name: Terraform Apply
+      id: apply
+      run: terraform plan -no-color
+    
